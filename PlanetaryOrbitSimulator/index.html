@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      canvas {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+  </body>
+  <script>
+    /** @type {CanvasRenderingContext2D} */
+    let ctx = null;
+    const G = 0.001;
+    const runType = 'around';
+
+    const circles = [{ name: '💎', x: 0, y: 0, r: 10, weight: 2000, speedX: 0, speedY: 0, color: 'red', origin: true }];
+
+    function random(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function generCircles() {
+      circles.length = 1;
+      for (let index = 0; index < 10; index++) {
+        circles.push({
+          // name: index,
+          x: random(-200, 200),
+          y: random(-200, 200),
+          r: random(2, 6),
+          weight: random(1, 4),
+          speedX: 0,
+          speedY: random(-3, 3),
+          color: '#' + random(100, 999).toFixed(0),
+        });
+      }
+    }
+
+    function createACircle(x, y, r, color = '#a81', name) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      // 圆形
+      ctx.arc(x, y, r, 0, 7);
+      ctx.fill();
+      // 名称
+      if (!name) return;
+      ctx.fillStyle = 'white';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(name, x, y);
+    }
+
+    function clear() {
+      ctx.fillStyle = '#111';
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+
+    function writeInfos() {
+      for (let index = 1; index < circles.length; index++) {
+        const c = circles[index];
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        if (c.dis > 1000) {
+          generCircles();
+          return;
+        }
+        ctx.fillText(`${c.dis?.toFixed(0)}`, 10, 10 + index * 15);
+      }
+    }
+
+    function run(time, lastTime) {
+      requestAnimationFrame((t) => run(t, time));
+      if (!lastTime) return;
+      const spanTime = (time - lastTime) / 10000;
+      clear();
+      // 计算新位置
+      let origin = { x: 0, y: 0 };
+      if (runType == 'around') {
+        origin = circles.find((c) => c.origin);
+        if (!origin) return;
+        circles.forEach((c) => {
+          if (c === origin) return;
+          const r = ((c.x - origin.x) ** 2 + (c.y - origin.y) ** 2) ** 0.5;
+          const f = (G * (c.weight ** 2 + origin.weight ** 2)) / r;
+          const fX = (f * (origin.x - c.x)) / r;
+          const fY = (f * (origin.y - c.y)) / r;
+          c.speedX += (spanTime * fX) / c.weight;
+          c.speedY += (spanTime * fY) / c.weight;
+          c.x += c.speedX;
+          c.y += c.speedY;
+          c.dis = r;
+        });
+      } else {
+        circles.forEach((c1) => {
+          if (c1.over) return;
+          let fX = 0;
+          let fY = 0;
+          for (const c2 of circles) {
+            if (c1 === c2 || c2.over) continue;
+            const r = ((c1.x - c2.x) ** 2 + (c1.y - c2.y) ** 2) ** 0.5;
+            if (r < c1.r + c2.r) {
+              c1.weight += c2.weight;
+              c1.speedX += c2.speedX;
+              c1.speedY += c2.speedY;
+              c2.over = true;
+              continue;
+            }
+            const f = (G * (c1.weight ** 2 + c2.weight ** 2)) / r;
+            fX += (f * (c2.x - c1.x)) / r;
+            fY += (f * (c2.y - c1.y)) / r;
+          }
+          c1.speedX += (spanTime * fX) / c1.weight;
+          c1.speedY += (spanTime * fY) / c1.weight;
+          c1.x += c1.speedX;
+          c1.y += c1.speedY;
+          if (c1.origin) {
+            origin = c1;
+          }
+        });
+      }
+      // 新帧画面
+      circles.forEach(({ x, y, r, color, name, over }) => {
+        if (over) return;
+        writeInfos();
+        createACircle(x - origin.x + ctx.canvas.width / 2, y - origin.y + ctx.canvas.height / 2, r, color, name);
+      });
+    }
+
+    window.addEventListener('load', () => {
+      const canvas = document.querySelector('canvas');
+      const canvasStyle = getComputedStyle(canvas);
+      canvas.width = parseInt(canvasStyle.width);
+      canvas.height = parseInt(canvasStyle.height);
+      ctx = canvas.getContext('2d');
+      generCircles();
+      run();
+    });
+  </script>
+</html>
