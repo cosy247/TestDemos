@@ -1,0 +1,26 @@
+<input type="text" />
+<input type="text" />
+
+<script>
+  function verify(selector, rag) {
+    if (!(rag instanceof RegExp)) return;
+    const els = document.querySelectorAll(selector);
+    if (els.length === 0) return;
+    for (const el of els) {
+      if (!(el instanceof HTMLInputElement)) continue;
+      el.addEventListener('input', () => {
+        if (!rag.test(el.value)) {
+          el.value = el.lastValue || '';
+          el.setSelectionRange(el.lastIndex, el.lastIndex);
+        } else {
+          el.lastValue = el.value;
+        }
+      });
+      el.addEventListener('selectionchange', () => {
+        el.lastIndex = el.selectionStart;
+      });
+    }
+  }
+
+  verify('input', /^[0-9]*$/);
+</script>
