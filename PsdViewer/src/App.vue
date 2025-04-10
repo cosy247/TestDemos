@@ -28,9 +28,10 @@ function handleFileChange(event) {
     if (dataRef.value) {
       dataRef.value.innerHTML = dataString;
     }
-    const img = psd.image.toPng();
-    if (imageRef.value) {
-      imageRef.value.appendChild(img);
+    for (const layer of psd.layers) {
+      if (layer.height !== 0 && layer.width !== 0) {
+        imageRef.value.appendChild(layer.image.toPng());
+      }
     }
 
     const node = psd.tree();
