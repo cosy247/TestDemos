@@ -1,0 +1,16 @@
+{
+  "name": "rpviewer",
+  "version": "1.0.0",
+  "main": "node.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "@zip.js/zip.js": "*",
+    "xml2js": "*"
+  }
+}
