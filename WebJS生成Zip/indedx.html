@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>打包图片为 ZIP</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  </head>
+  <body>
+    <button id="downloadZipBtn">下载 ZIP 文件</button>
+    <script>
+      function arrayBufferToBase64(arrayBuffer) {
+        const uint8Array = new Uint8Array(arrayBuffer);
+        let binaryString = '';
+        for (let i = 0; i < uint8Array.length; i++) {
+          binaryString += String.fromCharCode(uint8Array[i]);
+        }
+        return btoa(binaryString);
+      }
+
+      function getBase64ImageUrl(url) {
+        return new Promise((resolve) => {
+          var xhr = new XMLHttpRequest();
+          xhr.responseType = 'arraybuffer';
+          xhr.open('GET', url, true);
+          xhr.onload = function () {
+            var result = xhr.response;
+            resolve(arrayBufferToBase64(result));
+          };
+          xhr.send(null);
+        });
+      }
+
+      document.getElementById('downloadZipBtn').addEventListener('click', async () => {
+        const zip = new JSZip();
+        const imagesFolder = zip.folder('images');
+
+        // 示例：请求图片并添加到 ZIP 中
+        const imageUrls = [
+          'http://127.0.0.1:5501/TestDemos/WebJS生成Zip/1.jpg',
+          'http://127.0.0.1:5501/TestDemos/WebJS生成Zip/2.jpg',
+        ];
+
+        for (const url of imageUrls) {
+          try {
+            imagesFolder.file(url.split('/').pop(), await getBase64ImageUrl(url), { base64: true });
+          } catch (error) {
+            console.error(`无法加载图片 ${url}:`, error);
+          }
+        }
+
+        // 生成 ZIP 文件并下载
+        zip.generateAsync({ type: 'blob' }).then(function (content) {
+          saveAs(content, 'images.zip');
+        });
+      });
+    </script>
+  </body>
+</html>
