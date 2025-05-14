@@ -1,0 +1,45 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: white;
+}
+
+.main {
+  width: 100%;
+  display: flex;
+  margin: 0 5px;
+  gap: 5px;
+}
+
+.main-right,
+.main-left {
+  flex: 1;
+}
+
+.item {
+  width: 100%;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  margin-bottom: 5px;
+}
+
+.item-preview {
+  width: 100%;
+}
+
+.item-preview > * {
+  width: 100%;
+  display: block;
+  outline: none;
+  border: none;
+}
+
+.item-title {
+  font-size: 14px;
+  color: #111;
+}
