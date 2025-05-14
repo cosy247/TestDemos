@@ -1,25 +1,53 @@
+/* 在线链接服务仅供平台体验和调试使用，平台不承诺服务的稳定性，企业客户需下载字体包自行发布使用并做好备份。 */
+@font-face {
+  font-family: 'iconfont'; /* Project id 4921420 */
+  src: url('//at.alicdn.com/t/c/font_4921420_erywzdhqma6.woff2?t=1747223350205') format('woff2'),
+    url('//at.alicdn.com/t/c/font_4921420_erywzdhqma6.woff?t=1747223350205') format('woff'),
+    url('//at.alicdn.com/t/c/font_4921420_erywzdhqma6.ttf?t=1747223350205') format('truetype');
+}
+
 * {
   padding: 0;
   margin: 0;
+  font-family: iconfont;
 }
 
 body {
   background: white;
 }
 
-.main {
+.temp {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: -1;
+}
+
+.outer {
+  position: fixed;
+  overflow: auto;
+  height: 100vh;
   width: 100%;
+}
+
+.main {
   display: flex;
-  margin: 0 5px;
+  margin: 5px;
   gap: 5px;
 }
 
 .main-right,
 .main-left {
   flex: 1;
+  height: fit-content;
 }
 
 .item {
+  position: relative;
   width: 100%;
   background: white;
   border-radius: 4px;
@@ -39,7 +67,72 @@ body {
   border: none;
 }
 
+.control {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  height: 5vw;
+  width: 5vw;
+  font-size: 4vw;
+  line-height: 5vw;
+  text-align: center;
+  color: #ccc;
+  background: #0008;
+  border-radius: 50%;
+  z-index: 999;
+  cursor: pointer;
+}
+
 .item-title {
-  font-size: 14px;
+  font-size: 16px;
   color: #111;
+  margin: 5px;
+}
+.item-tag {
+  font-size: 14px;
+  color: #666;
+  margin: 5px;
+}
+.item-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 5px;
+  color: #666;
+  font-size: 14px;
+  margin: 5px;
+}
+
+.item-info-head {
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.item-info-like-icon {
+  margin-left: auto;
+}
+
+.item-info-like-icon.liked {
+  color: #2dbef1;
+}
+
+.loading {
+  text-align: center;
+  font-size: 15px;
+  margin: 20px;
+  color: #111;
+}
+
+.refresh {
+  position: fixed;
+  z-index: 999;
+  width: 100%;
+  top: -100px;
+  height: 100px;
+  line-height: 60px;
+  text-align: center;
+  background: linear-gradient(to top, #2dbdf100, #0008 50%);
+  color: white;
 }

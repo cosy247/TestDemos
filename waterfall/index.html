@@ -7,40 +7,155 @@
     <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
-    <div class="main">
-      <div class="main-left">
-        <div class="item">
-          <div class="item-preview">
-            <img src="" alt="" />
-          </div>
-          <p class="item-title">askdjfkj</p>
-          <p class="item-tag"></p>
-          <div class="item-info">
-            <div class="item-info-user">
-              <img src="" alt="" class="item-info-user-head" />
-              <p class="item-info-user-name">askdjfkj</p>
-            </div>
-            <div class="item-info-like">2</div>
-          </div>
-        </div>
+    <div class="outer">
+      <div class="main">
+        <div class="main-left"></div>
+        <div class="main-right"></div>
       </div>
-      <div class="main-right">
-        <div class="item">
-          <div class="item-preview">
-            <img src="" alt="" />
-          </div>
-          <p class="item-title">askdjfkj</p>
-          <p class="item-tag"></p>
-          <div class="item-info">
-            <div class="item-info-user">
-              <img src="" alt="" class="item-info-user-head" />
-              <p class="item-info-user-name">askdjfkj</p>
-            </div>
-            <div class="item-info-like">2</div>
-          </div>
-        </div>
-      </div>
+      <div class="loading">加载中🤖...</div>
     </div>
+    <div class="refresh">松开刷新🦄</div>
+    <div class="temp"></div>
   </body>
-  <script></script>
+  <script type="module">
+    import data from './data/data1.js';
+
+    const params = new URL(window.location.href).searchParams;
+    const key = params.get('key') || '';
+    const tag = params.get('tag') || '';
+
+    const mainLeft = document.querySelector('.main-left');
+    const mainRight = document.querySelector('.main-right');
+    const temp = document.querySelector('.temp');
+
+    function addItem(item) {
+      const mainLeftHeight = mainLeft.offsetHeight;
+      const mainRightHeight = mainRight.offsetHeight;
+      if (mainLeftHeight <= mainRightHeight) {
+        mainLeft.appendChild(item);
+      } else {
+        mainRight.appendChild(item);
+      }
+    }
+
+    // 筛选是否为空
+    let isEmpty = false;
+    function loadItems() {
+      return new Promise((resolve) => {
+        let count = 0;
+        // 筛选
+        const filterData = data.filter((d) => d.title.includes(key) && d.tag.includes(tag));
+        if (filterData.length === 0) {
+          isEmpty = true;
+          document.querySelector('.loading').innerHTML = '当前搜索条件无数据！😥';
+          return resolve();
+        }
+
+        // 显示
+        filterData.forEach((d) => {
+          const item = document.createElement('div');
+          item.className = 'item';
+          item.innerHTML = `
+        <div class="item-preview">
+          ${d.isMv ? `<video src="${d.preview}"></video>` : `<img  src="${d.preview}" alt="" />`}
+        </div>
+        ${d.isMv ? '<div class="control">&#xe60f;</div>' : ''}
+        <p class="item-title">${d.title}</p>
+        <p class="item-tag">${d.tag}</p>
+        <div class="item-info">
+          <img src="${d.userHead}" alt="" class="item-info-head" />
+          <p class="item-info-username">${d.username}</p>
+          <div class="item-info-like-icon ${d.isLike ? 'liked' : ''}">&#xe65e;</div>
+          <div class="item-info-like">${d.likeCount}</div>
+        </div>
+      `;
+          temp.appendChild(item);
+          if (d.isMv) {
+            item.querySelector('.item-preview video').addEventListener('loadedmetadata', (e) => {
+              item.querySelector('.control').addEventListener('click', () => {
+                if (e.target.paused) {
+                  e.target.play();
+                  item.querySelector('.control').innerHTML = '&#xe669;';
+                } else {
+                  e.target.pause();
+                  item.querySelector('.control').innerHTML = '&#xe60f;';
+                }
+              });
+              addItem(item);
+              if (++count === filterData.length) resolve();
+            });
+            item.querySelector('.item-preview video').addEventListener('error', () => {
+              if (++count === filterData.length) resolve();
+            });
+          } else {
+            item.querySelector('.item-preview img').addEventListener('load', () => {
+              setTimeout(() => {
+                addItem(item);
+                if (++count === filterData.length) resolve();
+              }, Math.random() * 300);
+            });
+            item.querySelector('.item-preview img').addEventListener('error', () => {
+              if (++count === filterData.length) resolve();
+            });
+          }
+        });
+      });
+    }
+
+    function firstLoad() {
+      return loadItems().then(() => {
+        const height = outer.scrollTop + outer.clientHeight;
+        if (!isEmpty && (mainLeft.scrollHeight < height || mainRight.scrollHeight < height)) {
+          firstLoad();
+        }
+      });
+    }
+    firstLoad();
+
+    // 上拉加载
+    let isLoading = false;
+    const outer = document.querySelector('.outer');
+    outer.addEventListener('scroll', () => {
+      if (outer.scrollTop + outer.clientHeight >= outer.scrollHeight - 50 && !isLoading) {
+        isLoading = true;
+        firstLoad().then(() => (isLoading = false));
+      }
+    });
+
+    // 下拉刷新
+    let startY = 0;
+    let isRefreshing = false;
+    let canRefresh = false;
+    let isTopStart = false;
+    const refresh = document.querySelector('.refresh');
+    outer.addEventListener('touchstart', (event) => {
+      if (outer.scrollTop !== 0 || isRefreshing) return;
+      isTopStart = true;
+      startY = event.touches[0].clientY;
+    });
+    outer.addEventListener('touchmove', (event) => {
+      if (outer.scrollTop !== 0 || isRefreshing || !isTopStart) return;
+      const currentY = event.touches[0].clientY;
+      const distance = currentY - startY;
+      if (distance >= 100) {
+        canRefresh = true;
+        refresh.style.top = '0px';
+        refresh.innerHTML = '松开刷新🦄';
+      } else {
+        canRefresh = false;
+        refresh.style.top = `${distance - 100}px`;
+        refresh.innerHTML = '下拉刷新❤️';
+      }
+    });
+    outer.addEventListener('touchend', (event) => {
+      refresh.style.top = '-100px';
+      if (outer.scrollTop !== 0 || isRefreshing || !isTopStart) return;
+      if (canRefresh) {
+        isRefreshing = true;
+        mainLeft.innerHTML = '';
+        mainRight.innerHTML = '';
+        firstLoad().then(() => (isRefreshing = false));
+      }
+    });
+  </script>
 </html>
