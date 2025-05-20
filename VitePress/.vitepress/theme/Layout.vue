@@ -1,12 +1,13 @@
 <script setup>
-import { useData } from 'vitepress'
+import { useData } from 'vitepress';
 
 // https://vitepress.dev/reference/runtime-api#usedata
-const { site, frontmatter } = useData()
+const { site, frontmatter } = useData();
 </script>
 
 <template>
-  <div v-if="frontmatter.home">
+  123
+  <!-- <div v-if="frontmatter.home">
     <h1>{{ site.title }}</h1>
     <p>{{ site.description }}</p>
     <ul>
@@ -17,5 +18,5 @@ const { site, frontmatter } = useData()
   <div v-else>
     <a href="/">Home</a>
     <Content />
-  </div>
+  </div> -->
 </template>
